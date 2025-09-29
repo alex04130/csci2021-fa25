@@ -16,6 +16,29 @@ int main(int argc, char **argv) {
     gradebook_t *book = NULL;
 
     // TODO Support a file name as a possible command line argument
+    if (argc > 1) {
+        if (strlen(argv[1]) > 4) {
+            if (strcmp(".bin", argv[1] + strlen(argv[1]) - 4) == 0) {
+                book = read_gradebook_from_binary(argv[1]);
+                if (book != NULL) {
+                    printf("Gradebook loaded from binary file\n");
+                } else {
+                    printf("Failed to read gradebook from binary file\n");
+                }
+            } else if (strcmp(".txt", argv[1] + strlen(argv[1]) - 4) == 0) {
+                book = read_gradebook_from_text(argv[1]);
+                if (book != NULL) {
+                    printf("Gradebook loaded from text file\n");
+                } else {
+                    printf("Failed to read gradebook from text file\n");
+                }
+            } else {
+                printf("Error: Unknown gradebook file extension\n");
+            }
+        } else {
+            printf("Error: Unknown gradebook file extension\n");
+        }
+    }
 
     printf("CSCI 2021 Gradebook System\n");
     printf("Commands:\n");
@@ -36,10 +59,18 @@ int main(int argc, char **argv) {
         printf("gradebook> ");
         if (scanf("%s", cmd) == EOF) {
             printf("\n");
+            if (book != NULL) {
+                free_gradebook(book);
+                book = NULL;
+            }
             break;
         }
 
         if (strcmp("exit", cmd) == 0) {
+            if (book != NULL) {
+                free_gradebook(book);
+                book = NULL;
+            }
             break;
         }
 
@@ -71,10 +102,90 @@ int main(int argc, char **argv) {
             int score;
             scanf("%s %d", cmd, &score);
             if (book != NULL) {
-                if (!add_score(book, cmd, score)) {
+                if (score > 0) {
+                    if (add_score(book, cmd, score)) {
+                        printf("Error: failed to add score to gradebook\n");
+                    }
+                } else {
+                    printf("Error: You must enter a score in the valid range (0 <= score)\n");
                 }
             } else {
                 printf("Error: You must create or load a gradebook first\n");
+            }
+        } else if (strcmp("lookup", cmd) == 0) {
+            scanf("%s", cmd);
+            if (book != NULL) {
+                int score = find_score(book, cmd);
+                if (score == -1) {
+                    printf("No score for '%s' found\n", cmd);
+                } else {
+                    printf("%s: %d\n", cmd, score);
+                }
+            } else {
+                printf("Error: You must create or load a gradebook first\n");
+            }
+        } else if (strcmp("clear", cmd) == 0) {
+            if (book != NULL) {
+                free_gradebook(book);
+                book = NULL;
+            } else {
+                printf("Error: No gradebook to clear\n");
+            }
+        } else if (strcmp("print", cmd) == 0) {
+            if (book != NULL) {
+                print_gradebook(book);
+            } else {
+                printf("Error: You must create or load a gradebook first\n");
+            }
+        } else if (strcmp("write_text", cmd) == 0) {
+            if (book != NULL) {
+                if (write_gradebook_to_text(book)) {
+                    printf("Failed to write gradebook to text file\n");
+                } else {
+                    char file_name[MAX_NAME_LEN + strlen(".txt")];
+                    strcpy(file_name, book->class_name);
+                    strcat(file_name, ".txt");
+                    printf("Gradebook successfully written to %s\n", file_name);
+                }
+            } else {
+                printf("Error: You must create or load a gradebook first\n");
+            }
+        } else if (strcmp("read_text", cmd) == 0) {
+            scanf("%s", cmd);
+            if (book != NULL) {
+                printf("Error: You must clear current gradebook first\n");
+            } else {
+                book = read_gradebook_from_text(cmd);
+                if (book != NULL) {
+                    printf("Gradebook loaded from text file\n");
+                } else {
+                    printf("Failed to read gradebook from text file\n");
+                }
+            }
+        } else if (strcmp("write_bin", cmd) == 0) {
+            if (book != NULL) {
+                if (write_gradebook_to_binary(book)) {
+                    printf("Failed to write gradebook to binary file\n");
+                } else {
+                    char file_name[MAX_NAME_LEN + strlen(".txt")];
+                    strcpy(file_name, book->class_name);
+                    strcat(file_name, ".bin");
+                    printf("Gradebook successfully written to %s\n", file_name);
+                }
+            } else {
+                printf("Error: You must create or load a gradebook first\n");
+            }
+        } else if (strcmp("read_bin", cmd) == 0) {
+            scanf("%s", cmd);
+            if (book != NULL) {
+                printf("Error: You must clear current gradebook first\n");
+            } else {
+                book = read_gradebook_from_binary(cmd);
+                if (book != NULL) {
+                    printf("Gradebook loaded from binary file\n");
+                } else {
+                    printf("Failed to read gradebook from binary file\n");
+                }
             }
         }
 

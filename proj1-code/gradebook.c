@@ -22,6 +22,9 @@ const char *get_gradebook_name(const gradebook_t *book) {
 
 node_t *new_node(const char *name, int score) {
     node_t *ptr = malloc(sizeof(node_t));
+    if (ptr == NULL) {
+        return NULL;
+    }
     ptr->left = NULL;
     ptr->right = NULL;
     ptr->score = score;
@@ -36,19 +39,28 @@ int add_score(gradebook_t *book, const char *name, int score) {
     }
     if (book->root == NULL) {
         book->root = new_node(name, score);
+        if (book->root == NULL) {
+            return -1;
+        }
         return 0;
     }
     node_t *ptr = book->root;
     while (1) {
-        if (strcmp(ptr->name, name) < 0) {
+        if (strcmp(ptr->name, name) > 0) {
             if (ptr->left == NULL) {
                 ptr->left = new_node(name, score);
+                if (ptr->left == NULL) {
+                    return -1;
+                }
                 return 0;
             }
             ptr = ptr->left;
         } else {
             if (ptr->right == NULL) {
                 ptr->right = new_node(name, score);
+                if (ptr->right == NULL) {
+                    return -1;
+                }
                 return 0;
             }
             ptr = ptr->right;
@@ -59,9 +71,9 @@ int add_score(gradebook_t *book, const char *name, int score) {
 int find_score(const gradebook_t *book, const char *name) {
     node_t *ptr = book->root;
     while (ptr != NULL) {
-        if (strcmp(ptr->name, name) < 0) {
+        if (strcmp(ptr->name, name) > 0) {
             ptr = ptr->left;
-        } else if (strcmp(ptr->name, name) > 0) {
+        } else if (strcmp(ptr->name, name) < 0) {
             ptr = ptr->right;
         } else {
             return ptr->score;
@@ -70,8 +82,19 @@ int find_score(const gradebook_t *book, const char *name) {
     return -1;
 }
 
-void node_traversal(int mode, const node_t *thisNode, void *parameter,
-                    void *func(const node_t *, void *parameter)) {
+/**
+ * Traversal the AVL tree
+ * @param mode the mode of the traversal
+ *        <0 preorder
+ *        =0 inorder
+ *        >0 postorder
+ * @param thisNode the root of the tree
+ * @param func the operate funtion
+ * @param parameter pointer of the parameter in the operate function
+ */
+
+void node_traversal(int mode, node_t *thisNode, void *parameter,
+                    void func(node_t *, void *parameter)) {
     if (mode < 0) {
         func(thisNode, parameter);
     }
@@ -89,7 +112,7 @@ void node_traversal(int mode, const node_t *thisNode, void *parameter,
     }
 }
 
-void print_node_text(const node_t *thisNode, void *file) {
+void print_node_text(node_t *thisNode, void *file) {
     fprintf(file, "%s: %d\n", thisNode->name, thisNode->score);
 }
 
@@ -99,18 +122,23 @@ void print_gradebook(const gradebook_t *book) {
         printf("Error: You must create or load a gradebook first\n");
         return;
     }
+    printf("Scores for all students in %s:\n", book->class_name);
     if (book->root) {
         node_traversal(0, book->root, stdout, print_node_text);
     }
 }
 
-void free_node(const node_t *thisNode, void *file) {
+void free_node(node_t *thisNode, void *file) {
     free(thisNode);
 }
 
 void free_gradebook(gradebook_t *book) {
     // TODO: Not yet implemented
-    node_traversal(1, book->root, stdout, free_node);
+    if (book == NULL) {
+        return;
+    }
+    if (book->root)
+        node_traversal(1, book->root, stdout, free_node);
     free(book);
 }
 
@@ -159,7 +187,10 @@ gradebook_t *read_gradebook_from_text(const char *file_name) {
     if (file == NULL) {
         return NULL;
     }
-    gradebook_t *gradebook = malloc(sizeof(gradebook_t));
+    char classname[MAX_NAME_LEN + 5];
+    strcpy(classname, file_name);
+    classname[strlen(classname) - 4] = 0;
+    gradebook_t *gradebook = create_gradebook(classname);
     char name[MAX_NAME_LEN];
     int grade;
     while (fscanf(file, "%s %d", name, &grade) != EOF) {
@@ -169,7 +200,7 @@ gradebook_t *read_gradebook_from_text(const char *file_name) {
     return gradebook;
 }
 
-void print_node_bin(const node_t *thisNode, void *file) {
+void print_node_bin(node_t *thisNode, void *file) {
     int nameLen = strlen(thisNode->name);
     fwrite(&nameLen, sizeof(int), 1, file);
     fwrite(thisNode->name, sizeof(char), nameLen, file);
@@ -180,13 +211,14 @@ int write_gradebook_to_binary(const gradebook_t *book) {
     // TODO: Not yet implemented
     char filename[MAX_NAME_LEN + 5];
     strcpy(filename, book->class_name);
-    FILE *file = fopen(strcat(filename, ".bin"), "bw");
+    FILE *file = fopen(strcat(filename, ".bin"), "wb");
     if (file == NULL) {
+        printf("%s\n", filename);
         return -1;
     }
-    node_traversal(0, book->root, file, print_node_bin);
+    if (book->root)
+        node_traversal(0, book->root, file, print_node_bin);
     fclose(file);
-    printf("Gradebook successfully written to %s", filename);
     return 0;
 }
 
@@ -196,11 +228,14 @@ gradebook_t *read_gradebook_from_binary(const char *file_name) {
     if (file == NULL) {
         return NULL;
     }
-    gradebook_t *gradebook = malloc(sizeof(gradebook_t));
+    char classname[MAX_NAME_LEN + 5];
+    strcpy(classname, file_name);
+    classname[strlen(classname) - 4] = 0;
+    gradebook_t *gradebook = create_gradebook(classname);
     char name[MAX_NAME_LEN + 1];
     int grade;
     int nameLen;
-    while (fread(&nameLen, sizeof(int), 1, file) != EOF) {
+    while (fread(&nameLen, sizeof(int), 1, file) != 0) {
         fread(&name, sizeof(char), nameLen, file);
         name[nameLen] = 0;
         fread(&grade, sizeof(int), 1, file);
