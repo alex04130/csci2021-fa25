@@ -25,9 +25,6 @@ node_t *new_node(const char *name, int score) {
     if (ptr == NULL) {
         return NULL;
     }
-    if (ptr == NULL) {
-        return NULL;
-    }
     ptr->left = NULL;
     ptr->right = NULL;
     ptr->score = score;
@@ -45,9 +42,6 @@ int add_score(gradebook_t *book, const char *name, int score) {
         if (book->root == NULL) {
             return -1;
         }
-        if (book->root == NULL) {
-            return -1;
-        }
         return 0;
     }
     node_t *ptr = book->root;
@@ -58,18 +52,12 @@ int add_score(gradebook_t *book, const char *name, int score) {
                 if (ptr->left == NULL) {
                     return -1;
                 }
-                if (ptr->left == NULL) {
-                    return -1;
-                }
                 return 0;
             }
             ptr = ptr->left;
         } else {
             if (ptr->right == NULL) {
                 ptr->right = new_node(name, score);
-                if (ptr->right == NULL) {
-                    return -1;
-                }
                 if (ptr->right == NULL) {
                     return -1;
                 }
@@ -90,8 +78,8 @@ int find_score(const gradebook_t *book, const char *name) {
         } else {
             return ptr->score;
         }
-        return -1;
     }
+    return -1;
 }
 
 /**
@@ -135,7 +123,6 @@ void print_gradebook(const gradebook_t *book) {
         return;
     }
     printf("Scores for all students in %s:\n", book->class_name);
-    printf("Scores for all students in %s:\n", book->class_name);
     if (book->root) {
         node_traversal(0, book->root, stdout, print_node_text);
     }
@@ -150,10 +137,6 @@ void free_gradebook(gradebook_t *book) {
     if (book == NULL) {
         return;
     }
-    if (book->root)
-        if (book == NULL) {
-            return;
-        }
     if (book->root)
         node_traversal(1, book->root, stdout, free_node);
     free(book);
@@ -204,10 +187,6 @@ gradebook_t *read_gradebook_from_text(const char *file_name) {
     if (file == NULL) {
         return NULL;
     }
-    char classname[MAX_NAME_LEN + 5];
-    strcpy(classname, file_name);
-    classname[strlen(classname) - 4] = 0;
-    gradebook_t *gradebook = create_gradebook(classname);
     char classname[MAX_NAME_LEN + 5];
     strcpy(classname, file_name);
     classname[strlen(classname) - 4] = 0;

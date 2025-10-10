@@ -1,0 +1,8 @@
+========================================================================================================================
+== Test 34: Read Two Large Files
+== Reads in gradebook from a text file and prints contents, then clears it and
+== does the same for a binary file.
+Running test...
+Expected output is in file 'test_results/raw/project_1-34-expected.tmp'
+Actual output is in file 'test_results/raw/project_1-34-actual.tmp'
+Test PASSED

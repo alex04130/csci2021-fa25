@@ -1,0 +1,8 @@
+========================================================================================================================
+== Test 36: Write Large Gradebook to Binary File
+== Reads in a large results log from text file, then writes the log to a binary
+== file. Reloads from the binary file and prints contents.
+Running test...
+Expected output is in file 'test_results/raw/project_1-36-expected.tmp'
+Actual output is in file 'test_results/raw/project_1-36-actual.tmp'
+Test PASSED

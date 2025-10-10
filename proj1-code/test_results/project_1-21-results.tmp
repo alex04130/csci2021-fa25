@@ -1,0 +1,7 @@
+========================================================================================================================
+== Test 21: Clear Before Print
+== Creates a new gradebook, then clears it, then attempts to print out scores
+Running test...
+Expected output is in file 'test_results/raw/project_1-21-expected.tmp'
+Actual output is in file 'test_results/raw/project_1-21-actual.tmp'
+Test PASSED

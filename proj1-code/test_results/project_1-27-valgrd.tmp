@@ -1,0 +1,15 @@
+==21469== Memcheck, a memory error detector
+==21469== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==21469== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==21469== Command: ./gradebook_main
+==21469== Parent PID: 21327
+==21469== 
+==21469== 
+==21469== HEAP SUMMARY:
+==21469==     in use at exit: 0 bytes in 0 blocks
+==21469==   total heap usage: 3 allocs, 3 frees, 2,120 bytes allocated
+==21469== 
+==21469== All heap blocks were freed -- no leaks are possible
+==21469== 
+==21469== For lists of detected and suppressed errors, rerun with: -s
+==21469== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
