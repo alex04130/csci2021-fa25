@@ -89,6 +89,11 @@ YOU WILL RECEIVE NO CREDIT IF YOUR CODE DOES NOT PASS THIS CHECK.
 int bitXor(int x, int y) {
     return ((~(x & y)) & (~((~x) & (~y))));
 }
+/*
+ * a^b = a && b || (!a && !b)
+ *     = ! ( !(a && b) && !(!a && !b))
+ * return ~ ( ~ (a&b) & ~((~a)&(~b))
+ */
 
 /*
  * bitAnd - Compute x&y using only ~ and |
@@ -100,6 +105,10 @@ int bitXor(int x, int y) {
 int bitAnd(int x, int y) {
     return ~(~x | ~y);
 }
+/*
+ * a&&b=!(!a||!b)
+ * return ~((~a)|(~b))
+ */
 
 /*
  * allOddBits - Return 1 if all odd-numbered bits in word set to 1
@@ -110,8 +119,15 @@ int bitAnd(int x, int y) {
  *   Rating: 2
  */
 int allOddBits(int x) {
-    return !(((x & 0xAA) & ((x >> 8) & 0xAA) & ((x >> 16) & 0xAA) & ((x >> 24) & 0xAA)) ^ 0xAA);
+    return !(((x & (x >> 8) & (x >> 16) & (x >> 24)) & 0xAA) ^ 0xAA);
 }
+/*
+ * For all bytes that have all odd-numberd bits set should be 1x1x1x1x.
+ * If and all bytes together, the result will be the bits for each byte that all set.
+ * Using bit mask 0xAA (0b10101010) to filter the odd bits and compare them with 0xAA.
+ * If it's not 0xAA than the result is not 0, if it's 0xAA the result is 0.
+ * Then return the not of it.
+ */
 
 /*
  * floatIsEqual - Compute f == g for floating point arguments f and g.
@@ -125,19 +141,22 @@ int allOddBits(int x) {
  *   Rating: 2
  */
 int floatIsEqual(unsigned uf, unsigned ug) {
-    if (!((uf >> 23 & 0xff) ^ 0xFF) && uf & 0x7FFFFF) {
-        return 0;
+    if ((!((uf >> 23 & 0xff) ^ 0xFF)) &&
+        (uf & 0x7FFFFF)) {    // uf >> 23 & 0xff exp of uf, (uf >> 23 & 0xff) ^ 0xFF 0 if exp is
+                              // 0xFF, (!((uf >> 23 & 0xff) ^ 0xFF)) 1 if exp is 0xFF. (uf &
+                              // 0x7FFFFF) base not 0
+        return 0;             // if exp is 0xFF and base is not 0. It is NaN
     }
-    if (!((ug >> 23 & 0xff) ^ 0xFF) && ug & 0x7FFFFF) {
-        return 0;
+    if ((!((ug >> 23 & 0xff) ^ 0xFF)) && (ug & 0x7FFFFF)) {
+        return 0;    // same as ug
     }
     if (uf == 0x80000000) {
-        uf = 0x00000000;
+        uf = 0x00000000;    // 0x80000000=0x00000000=0 so change it to common 0.
     }
     if (ug == 0x80000000) {
         ug = 0x00000000;
     }
-    return !(uf ^ ug);
+    return !(uf ^ ug);    // uf^ug find the different bits.
 }
 
 /*
@@ -149,8 +168,13 @@ int floatIsEqual(unsigned uf, unsigned ug) {
  *   Rating: 2
  */
 int anyEvenBit(int x) {
-    return !(!((x & 0x55) | ((x >> 8) & 0x55) | ((x >> 16) & 0x55) | ((x >> 24) & 0x55)));
+    return !(!((x | (x >> 8) | (x >> 16) | (x >> 24)) & 0x55));
 }
+/*
+ * If or all bytes together, the result will be the bits for any byte that set.
+ * Using bit mask 0x55 (0b 0101 0101) to filter the even bits and compare them with 0x55.
+ * if any even bits is set, the result is not 0.
+ */
 
 /*
  * isPositive - return 1 if x > 0, return 0 otherwise
@@ -162,6 +186,10 @@ int anyEvenBit(int x) {
 int isPositive(int x) {
     return (!(x >> 31 & 1) & !(!x));
 }
+/*
+ * positive should have a 0 on the 31st bit, so move 31 times right and and with 1.
+ * positive number shouldn't be 0 so and not not x
+ */
 
 /*
  * replaceByte(x,n,c) - Replace byte n in x with c
@@ -173,9 +201,15 @@ int isPositive(int x) {
  *   Rating: 3
  */
 int replaceByte(int x, int n, int c) {
-    int n4 = n << 3;
-    return (((~(255 << n4)) & x) | (c << n4));
+    int n8 = n << 3;
+    return (((~(0xFF << n8)) & x) | (c << n8));
 }
+/*
+ * n << 3 equals n*2^3=n*8
+ * move 0xFF n*8 times that will be the byte that need to be replaced.
+ * filp all bits will be the bit mask for the bits need to be left
+ * and set it with the same left shift of target
+ */
 
 /*
  * isLess - if x < y  then return 1, else return 0
@@ -188,6 +222,16 @@ int isLess(int x, int y) {
     int sign = ((x ^ y) >> 31) & 1;
     return (sign & ((x >> 31) & 1)) | ((!sign) & ((x + (~y + 1)) >> 31 & 1));
 }
+/*
+ * sign will be 1 if one is negative and other one is not negative
+ * if x and y have different sign, then if x's sign is negative x<y
+ * if x and y have same sign, then
+ * x<y
+ * x-y<0
+ * x+(-y)<0
+ * (x+(~y+1))<0
+ * <0 means the sign is 1 so right shift 31 times and and with 1.
+ */
 
 /*
  * rotateLeft - Rotate x to the left by n
@@ -198,8 +242,15 @@ int isLess(int x, int y) {
  *   Rating: 3
  */
 int rotateLeft(int x, int n) {
-    return ((x << n) & (~((1 << n) + (~(0))))) | ((x >> (33 + ~(n))) & (((1 << n) + (~(0)))));
+    int bitmaskofn = (1 << n) + (~(0));
+    return ((x << n) & (~(bitmaskofn))) | ((x >> (33 + ~(n))) & (bitmaskofn));
 }
+/*
+ * the right n bits will be the top n bits of x. so x need to right shift 32-n bits.
+ * 32-n=32+(-n)=32+(~n+1)=33+(~n) Then and with bit mask of n bits. The left 32-n bits will be the
+ * right 32-n bits of x, so x need to left shift n times and clear n bits to 0. 1<<n will be all 0
+ * but 1 on n, minus 1 will make all above n (contains n) 0 and other 1
+ */
 
 /*
  * bitMask - Generate a mask consisting of all 1's
@@ -216,6 +267,13 @@ int bitMask(int highbit, int lowbit) {
     int low = (1 << (lowbit)) + (~(0));
     return ~(high | low);
 }
+/*
+ * The high bits are the bits that is above high, if high equals 31, high should be 0 but left shift
+ * 32 will be the same as not shift so it need to be shift 31 than shift 1 The low bits are the bits
+ * that is below low, add -1 equal minus 1. 1<<lowbit will be all 0 but 1 on lowbit, minus 1 will
+ * make all above low (contains low) 0 and other 1 set them all together will be the flip of the
+ * bitmask.
+ */
 
 /*
  * floatScale2 - Return bit-level equivalent of expression 2*f for
@@ -229,14 +287,17 @@ int bitMask(int highbit, int lowbit) {
  *   Rating: 4
  */
 unsigned floatScale2(unsigned uf) {
-    if (!((uf >> 23 & 0xff) ^ 0xFF)) {
+    if ((uf >> 23 & 0xFF) ==
+        0xFF) {    // uf >> 23 & 0xff is the exp, if exp is 0xFF, scale2 shouldn't change
         return uf;
     }
-    if (!(uf >> 23 & 0xff)) {
+    if (!(uf >> 23 &
+          0xff)) {    // if exp is 0, uf is subnormal number, than just shift left and add the sign.
         unsigned x = uf << 1;
         return x | (uf & 0x80000000);
     }
-    return ((((uf & 0x7F800000) >> 23) + 1) << 23) | (uf & 0x807FFFFF);
+    return ((((uf & 0x7F800000) >> 23) + 1) << 23) |
+           (uf & 0x807FFFFF);    // add the exp 1 and leave other the same.
 }
 
 /*
@@ -250,3 +311,7 @@ unsigned floatScale2(unsigned uf) {
 int isPower2(int x) {
     return (!(x & (x + ~(0)))) & (!(x >> 31)) & (!(!x));
 }
+/*
+ * if it's power2 , x&(x-1) will be 0 since there should be only one '1'. and it couldn't be
+ * negative and 0.
+ */
