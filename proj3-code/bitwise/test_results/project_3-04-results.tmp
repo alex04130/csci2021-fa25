@@ -1,0 +1,7 @@
+=======================================================================================================================================================
+== Test 4: floatIsEqual
+== Tests the solution to the floatIsEqual puzzle
+Running test...
+Expected output is in file 'test_results/raw/project_3-04-expected.tmp'
+Actual output is in file 'test_results/raw/project_3-04-actual.tmp'
+Test PASSED

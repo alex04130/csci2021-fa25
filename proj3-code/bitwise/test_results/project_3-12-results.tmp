@@ -1,0 +1,7 @@
+=======================================================================================================================================================
+== Test 12: floatScale2
+== Tests the solution to the floatScale2 puzzle
+Running test...
+Expected output is in file 'test_results/raw/project_3-12-expected.tmp'
+Actual output is in file 'test_results/raw/project_3-12-actual.tmp'
+Test PASSED

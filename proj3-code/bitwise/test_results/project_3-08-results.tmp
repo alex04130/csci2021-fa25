@@ -1,0 +1,7 @@
+=======================================================================================================================================================
+== Test 8: isLess
+== Tests the solution to the isLess puzzle
+Running test...
+Expected output is in file 'test_results/raw/project_3-08-expected.tmp'
+Actual output is in file 'test_results/raw/project_3-08-actual.tmp'
+Test PASSED
